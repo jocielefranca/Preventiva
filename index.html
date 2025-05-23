@@ -1,0 +1,980 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistema de Atendimento Técnico</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            padding: 30px;
+            max-width: 800px;
+            width: 100%;
+            min-height: 600px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .container::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, #667eea, #764ba2, #f093fb, #f5576c);
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .header h1 {
+            color: #333;
+            font-size: 2.2em;
+            margin-bottom: 10px;
+            font-weight: 700;
+        }
+
+        .header p {
+            color: #666;
+            font-size: 1.1em;
+        }
+
+        .step-container {
+            background: #f8f9ff;
+            border-radius: 15px;
+            padding: 25px;
+            margin: 20px 0;
+            border-left: 5px solid #667eea;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+        }
+
+        .step-container:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+        }
+
+        .step-title {
+            font-size: 1.4em;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .step-icon {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            color: white;
+            font-size: 0.8em;
+        }
+
+        .cliente { background: #f093fb; border-left-color: #f093fb; }
+        .sistema { background: #667eea; border-left-color: #667eea; }
+        .decisao { background: #f5576c; border-left-color: #f5576c; }
+        .tecnico { background: #4ecdc4; border-left-color: #4ecdc4; }
+        .dados { background: #ffeaa7; border-left-color: #ffeaa7; color: #333 !important; }
+
+        .step-description {
+            color: #555;
+            line-height: 1.6;
+            margin-bottom: 15px;
+        }
+
+        .form-group {
+            margin: 15px 0;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 500;
+            color: #333;
+        }
+
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e1e5e9;
+            border-radius: 8px;
+            font-size: 1em;
+            transition: border-color 0.3s ease;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1em;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            margin: 5px;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.3);
+        }
+
+        .btn-secondary {
+            background: linear-gradient(135deg, #74b9ff 0%, #0984e3 100%);
+        }
+
+        .btn-success {
+            background: linear-gradient(135deg, #00b894 0%, #00a085 100%);
+        }
+
+        .btn-danger {
+            background: linear-gradient(135deg, #e17055 0%, #d63031 100%);
+        }
+
+        .navigation {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 1px solid #e1e5e9;
+        }
+
+        .progress-bar {
+            background: #e1e5e9;
+            height: 6px;
+            border-radius: 3px;
+            margin: 20px 0;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            background: linear-gradient(90deg, #667eea, #764ba2);
+            height: 100%;
+            border-radius: 3px;
+            transition: width 0.5s ease;
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 0.85em;
+            font-weight: 500;
+            margin: 5px 0;
+        }
+
+        .status-success { background: #d4edda; color: #155724; }
+        .status-warning { background: #fff3cd; color: #856404; }
+        .status-danger { background: #f8d7da; color: #721c24; }
+        .status-info { background: #d1ecf1; color: #0c5460; }
+
+        .hidden { display: none; }
+
+        .protocol-info {
+            background: linear-gradient(135deg, #74b9ff 0%, #0984e3 100%);
+            color: white;
+            padding: 15px;
+            border-radius: 10px;
+            margin: 15px 0;
+            text-align: center;
+        }
+
+        .email-preview {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 15px 0;
+            font-family: monospace;
+        }
+
+        .schedule-options {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 10px;
+            margin: 15px 0;
+        }
+
+        .schedule-option {
+            background: white;
+            border: 2px solid #e1e5e9;
+            border-radius: 8px;
+            padding: 15px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .schedule-option:hover {
+            border-color: #667eea;
+            background: #f8f9ff;
+        }
+
+        .schedule-option.selected {
+            border-color: #667eea;
+            background: #667eea;
+            color: white;
+        }
+
+        .satisfaction-survey {
+            display: grid;
+            gap: 15px;
+        }
+
+        .rating-stars {
+            display: flex;
+            gap: 5px;
+            justify-content: center;
+            margin: 10px 0;
+        }
+
+        .star {
+            font-size: 2em;
+            color: #ddd;
+            cursor: pointer;
+            transition: color 0.2s ease;
+        }
+
+        .star.active {
+            color: #ffd700;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                margin: 10px;
+                padding: 20px;
+            }
+            
+            .header h1 {
+                font-size: 1.8em;
+            }
+            
+            .schedule-options {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Sistema de Atendimento Técnico</h1>
+            <p>Fluxo completo de garantia e agendamento</p>
+        </div>
+
+        <div class="progress-bar">
+            <div class="progress-fill" id="progressFill"></div>
+        </div>
+
+        <div id="currentStep"></div>
+
+        <div class="navigation">
+            <button class="btn btn-secondary" id="prevBtn" onclick="previousStep()">← Anterior</button>
+            <div>
+                <span>Etapa <span id="stepNumber">1</span> de <span id="totalSteps">15</span></span>
+            </div>
+            <button class="btn" id="nextBtn" onclick="nextStep()">Próximo →</button>
+        </div>
+    </div>
+
+    <script>
+        let currentStepIndex = 0;
+        let formData = {};
+        let selectedSchedule = null;
+        let rating = 0;
+
+        const steps = [
+            {
+                id: 'cliente-acesso',
+                type: 'cliente',
+                title: '👤 Cliente - Acesso ao Sistema',
+                content: `
+                    <div class="step-description">
+                        O cliente acessa o sistema através do bot ou portal web para solicitar atendimento técnico.
+                    </div>
+                    <div class="form-group">
+                        <label>Como você deseja acessar?</label>
+                        <select id="accessMethod">
+                            <option value="">Selecione uma opção</option>
+                            <option value="bot">Bot de Atendimento</option>
+                            <option value="portal">Portal Web</option>
+                        </select>
+                    </div>
+                `
+            },
+            {
+                id: 'formulario',
+                type: 'cliente',
+                title: '📝 Preenchimento do Formulário',
+                content: `
+                    <div class="step-description">
+                        Preencha os dados para abertura do protocolo de atendimento.
+                    </div>
+                    <div class="form-group">
+                        <label>Nome Completo:</label>
+                        <input type="text" id="clientName" placeholder="Digite seu nome completo">
+                    </div>
+                    <div class="form-group">
+                        <label>E-mail:</label>
+                        <input type="email" id="clientEmail" placeholder="seu@email.com">
+                    </div>
+                    <div class="form-group">
+                        <label>Produto:</label>
+                        <select id="product">
+                            <option value="">Selecione o produto</option>
+                            <option value="notebook">Notebook</option>
+                            <option value="desktop">Desktop</option>
+                            <option value="monitor">Monitor</option>
+                            <option value="impressora">Impressora</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Número de Série:</label>
+                        <input type="text" id="serialNumber" placeholder="Digite o número de série">
+                    </div>
+                    <div class="form-group">
+                        <label>Descrição do Problema:</label>
+                        <textarea id="problemDescription" rows="4" placeholder="Descreva detalhadamente o problema"></textarea>
+                    </div>
+                `
+            },
+            {
+                id: 'protocolo',
+                type: 'sistema',
+                title: '🎫 Abertura de Protocolo',
+                content: `
+                    <div class="step-description">
+                        Sistema registra automaticamente o protocolo de atendimento.
+                    </div>
+                    <div class="protocol-info">
+                        <h3>Protocolo Gerado</h3>
+                        <h2 id="protocolNumber">AT-2025-001234</h2>
+                        <p>Data: ${new Date().toLocaleDateString('pt-BR')}</p>
+                        <p>Hora: ${new Date().toLocaleTimeString('pt-BR')}</p>
+                    </div>
+                    <div class="status-badge status-success">✅ Protocolo registrado com sucesso</div>
+                `
+            },
+            {
+                id: 'power-automate',
+                type: 'sistema',
+                title: '⚡ Power Automate - Processamento',
+                content: `
+                    <div class="step-description">
+                        O Power Automate é acionado automaticamente para processar a solicitação.
+                    </div>
+                    <div style="text-align: center; margin: 20px 0;">
+                        <div style="display: inline-block; padding: 20px; background: #f8f9ff; border-radius: 10px;">
+                            <div style="font-size: 3em; margin-bottom: 10px;">⚙️</div>
+                            <div>Processando solicitação...</div>
+                            <div class="status-badge status-info">🔄 Consultando base de garantias</div>
+                        </div>
+                    </div>
+                `
+            },
+            {
+                id: 'consulta-garantia',
+                type: 'dados',
+                title: '📊 Consulta na Planilha de Garantias',
+                content: `
+                    <div class="step-description">
+                        Sistema consulta a planilha de garantias para verificar a cobertura do produto.
+                    </div>
+                    <div style="background: #f8f9fa; padding: 15px; border-radius: 8px; margin: 15px 0;">
+                        <h4>Dados da Garantia:</h4>
+                        <p><strong>Produto:</strong> <span id="warrantyProduct">-</span></p>
+                        <p><strong>Data de Compra:</strong> <span id="purchaseDate">-</span></p>
+                        <p><strong>Prazo de Garantia:</strong> <span id="warrantyPeriod">-</span></p>
+                        <p><strong>Status:</strong> <span id="warrantyStatus">-</span></p>
+                    </div>
+                `
+            },
+            {
+                id: 'analise-garantia',
+                type: 'decisao',
+                title: '🔍 Análise de Garantia',
+                content: `
+                    <div class="step-description">
+                        Sistema analisa se o produto está dentro do prazo de garantia.
+                    </div>
+                    <div style="text-align: center; margin: 20px 0;">
+                        <h3>Resultado da Análise:</h3>
+                        <div class="form-group">
+                            <label>Status da Garantia:</label>
+                            <select id="warrantyDecision" onchange="updateWarrantyStatus()">
+                                <option value="">Selecione o resultado</option>
+                                <option value="within">Dentro da Garantia</option>
+                                <option value="expired">Garantia Expirada</option>
+                                <option value="analysis">Necessita Análise Manual</option>
+                            </select>
+                        </div>
+                        <div id="warrantyResult"></div>
+                    </div>
+                `
+            },
+            {
+                id: 'email-negativa',
+                type: 'sistema',
+                title: '📧 E-mail de Negativa',
+                content: `
+                    <div class="step-description">
+                        Sistema envia automaticamente e-mail informando que o produto não está coberto pela garantia.
+                    </div>
+                    <div class="email-preview">
+                        <strong>Para:</strong> <span id="emailTo">cliente@email.com</span><br>
+                        <strong>Assunto:</strong> Protocolo AT-2025-001234 - Produto fora da garantia<br><br>
+                        
+                        Prezado(a) cliente,<br><br>
+                        
+                        Informamos que após análise do seu protocolo AT-2025-001234, identificamos que seu produto não está mais coberto pela garantia.<br><br>
+                        
+                        <strong>Detalhes:</strong><br>
+                        - Produto: <span id="emailProduct">-</span><br>
+                        - Data de compra: <span id="emailPurchase">-</span><br>
+                        - Garantia válida até: <span id="emailWarrantyEnd">-</span><br><br>
+                        
+                        Caso deseje realizar o reparo fora da garantia, entre em contato conosco.<br><br>
+                        
+                        Atenciosamente,<br>
+                        Equipe de Suporte Técnico
+                    </div>
+                    <div class="status-badge status-danger">❌ Solicitação encerrada - Fora da garantia</div>
+                `
+            },
+            {
+                id: 'analise-manual',
+                type: 'sistema',
+                title: '👥 Tarefa para Analista',
+                content: `
+                    <div class="step-description">
+                        Casos que necessitam análise manual são direcionados para um analista especializado.
+                    </div>
+                    <div style="background: #fff3cd; padding: 15px; border-radius: 8px; margin: 15px 0;">
+                        <h4>🔔 Tarefa Criada</h4>
+                        <p><strong>Analista responsável:</strong> João Silva</p>
+                        <p><strong>Prazo para análise:</strong> 24 horas</p>
+                        <p><strong>Prioridade:</strong> Normal</p>
+                    </div>
+                    <div class="form-group">
+                        <label>Decisão do Analista:</label>
+                        <select id="analystDecision">
+                            <option value="">Aguardando análise...</option>
+                            <option value="approved">Aprovado para garantia</option>
+                            <option value="denied">Negado - Fora da garantia</option>
+                        </select>
+                    </div>
+                `
+            },
+            {
+                id: 'agendamento',
+                type: 'sistema',
+                title: '📅 Processo de Agendamento',
+                content: `
+                    <div class="step-description">
+                        Sistema consulta a disponibilidade e envia opções de horário para o cliente.
+                    </div>
+                    <div style="background: #d4edda; padding: 15px; border-radius: 8px; margin: 15px 0;">
+                        <h4>✅ Garantia Aprovada</h4>
+                        <p>Consultando agenda dos técnicos...</p>
+                    </div>
+                    <div class="status-badge status-success">🔄 Buscando horários disponíveis</div>
+                `
+            },
+            {
+                id: 'email-horarios',
+                type: 'sistema',
+                title: '📧 E-mail com Horários Disponíveis',
+                content: `
+                    <div class="step-description">
+                        Cliente recebe e-mail com opções de horários para agendamento da visita técnica.
+                    </div>
+                    <div class="email-preview">
+                        <strong>Para:</strong> <span id="scheduleEmailTo">cliente@email.com</span><br>
+                        <strong>Assunto:</strong> Protocolo AT-2025-001234 - Horários disponíveis<br><br>
+                        
+                        Prezado(a) cliente,<br><br>
+                        
+                        Seu produto está coberto pela garantia! Selecione um horário para a visita técnica:<br><br>
+                    </div>
+                    
+                    <div class="schedule-options">
+                        <div class="schedule-option" onclick="selectSchedule(1)">
+                            <strong>Amanhã</strong><br>
+                            09:00 - 12:00<br>
+                            <small>Técnico: Carlos</small>
+                        </div>
+                        <div class="schedule-option" onclick="selectSchedule(2)">
+                            <strong>Amanhã</strong><br>
+                            14:00 - 17:00<br>
+                            <small>Técnico: Ana</small>
+                        </div>
+                        <div class="schedule-option" onclick="selectSchedule(3)">
+                            <strong>Depois de Amanhã</strong><br>
+                            08:00 - 11:00<br>
+                            <small>Técnico: Roberto</small>
+                        </div>
+                    </div>
+                `
+            },
+            {
+                id: 'confirmacao',
+                type: 'sistema',
+                title: '✅ Confirmação de Agendamento',
+                content: `
+                    <div class="step-description">
+                        Sistema confirma o agendamento e notifica tanto o cliente quanto o técnico.
+                    </div>
+                    <div class="protocol-info">
+                        <h3>Agendamento Confirmado</h3>
+                        <p><strong>Data:</strong> <span id="confirmedDate">-</span></p>
+                        <p><strong>Horário:</strong> <span id="confirmedTime">-</span></p>
+                        <p><strong>Técnico:</strong> <span id="confirmedTechnician">-</span></p>
+                    </div>
+                    <div class="status-badge status-success">📱 Técnico notificado</div>
+                    <div class="status-badge status-info">📧 Cliente receberá lembrete</div>
+                `
+            },
+            {
+                id: 'visita-tecnica',
+                type: 'tecnico',
+                title: '🔧 Visita Técnica',
+                content: `
+                    <div class="step-description">
+                        Técnico realiza a visita e diagnóstica o problema no produto.
+                    </div>
+                    <div style="text-align: center; margin: 20px 0;">
+                        <div style="display: inline-block; padding: 20px; background: #f0fdf4; border-radius: 10px;">
+                            <div style="font-size: 3em; margin-bottom: 10px;">🔧</div>
+                            <div><strong>Técnico em campo</strong></div>
+                            <div>Realizando diagnóstico...</div>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>Diagnóstico:</label>
+                        <select id="technicalDiagnosis" onchange="updateDiagnosis()">
+                            <option value="">Aguardando diagnóstico...</option>
+                            <option value="immediate">Reparo imediato possível</option>
+                            <option value="parts">Necessita peças de reposição</option>
+                        </select>
+                    </div>
+                    <div id="diagnosisResult"></div>
+                `
+            },
+            {
+                id: 'reparo-final',
+                type: 'tecnico',
+                title: '🛠️ Finalização do Reparo',
+                content: `
+                    <div class="step-description">
+                        Técnico finaliza o reparo e registra a solução no sistema.
+                    </div>
+                    <div style="background: #d4edda; padding: 20px; border-radius: 10px; text-align: center; margin: 20px 0;">
+                        <div style="font-size: 3em; margin-bottom: 10px;">✅</div>
+                        <h3>Reparo Concluído com Sucesso!</h3>
+                        <p>Produto testado e funcionando perfeitamente</p>
+                    </div>
+                    <div class="form-group">
+                        <label>Solução Aplicada:</label>
+                        <textarea id="solution" rows="3" placeholder="Descreva a solução aplicada..."></textarea>
+                    </div>
+                    <div class="status-badge status-success">🔄 Atualizando sistema...</div>
+                `
+            },
+            {
+                id: 'satisfacao',
+                type: 'cliente',
+                title: '⭐ Pesquisa de Satisfação',
+                content: `
+                    <div class="step-description">
+                        Cliente recebe pesquisa de satisfação para avaliar o atendimento.
+                    </div>
+                    <div class="satisfaction-survey">
+                        <div style="text-align: center;">
+                            <h3>Como você avalia nosso atendimento?</h3>
+                            <div class="rating-stars">
+                                <span class="star" onclick="setRating(1)">⭐</span>
+                                <span class="star" onclick="setRating(2)">⭐</span>
+                                <span class="star" onclick="setRating(3)">⭐</span>
+                                <span class="star" onclick="setRating(4)">⭐</span>
+                                <span class="star" onclick="setRating(5)">⭐</span>
+                            </div>
+                            <p id="ratingText">Clique nas estrelas para avaliar</p>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>Comentários adicionais:</label>
+                            <textarea id="feedback" rows="4" placeholder="Conte-nos sobre sua experiência..."></textarea>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>Recomendaria nossos serviços?</label>
+                            <select id="recommendation">
+                                <option value="">Selecione uma opção</option>
+                                <option value="yes">Sim, certamente</option>
+                                <option value="maybe">Talvez</option>
+                                <option value="no">Não recomendaria</option>
+                            </select>
+                        </div>
+                    </div>
+                `
+            },
+            {
+                id: 'melhoria-continua',
+                type: 'sistema',
+                title: '📈 Melhoria Contínua',
+                content: `
+                    <div class="step-description">
+                        Sistema analisa o feedback do cliente para identificar oportunidades de melhoria.
+                    </div>
+                    <div style="background: #f8f9ff; padding: 20px; border-radius: 10px; margin: 20px 0;">
+                        <h3>📊 Análise de Qualidade</h3>
+                        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-top: 15px;">
+                            <div style="background: white; padding: 15px; border-radius: 8px; text-align: center;">
+                                <div style="font-size: 2em; color: #667eea;">⭐</div>
+                                <div><strong>Avaliação Média</strong></div>
+                                <div id="avgRating">4.8/5.0</div>
+                            </div>
+                            <div style="background: white; padding: 15px; border-radius: 8px; text-align: center;">
+                                <div style="font-size: 2em; color: #4ecdc4;">⏱️</div>
+                                <div><strong>Tempo Médio</strong></div>
+                                <div>2.3 dias</div>
+                            </div>
+                            <div style="background: white; padding: 15px; border-radius: 8px; text-align: center;">
+                                <div style="font-size: 2em; color: #00b894;">✅</div>
+                                <div><strong>Taxa de Sucesso</strong></div>
+                                <div>98.5%</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="status-badge status-success">🎉 Processo concluído com sucesso!</div>
+                    <div style="text-align: center; margin-top: 20px;">
+                        <button class="btn btn-success" onclick="restartProcess()">🔄 Simular Novo Atendimento</button>
+                    </div>
+                `
+            }
+        ];
+
+        function renderStep(stepIndex) {
+            const step = steps[stepIndex];
+            const stepContainer = document.getElementById('currentStep');
+            
+            stepContainer.innerHTML = `
+                <div class="step-container ${step.type}">
+                    <div class="step-title">
+                        <div class="step-icon ${step.type}">${stepIndex + 1}</div>
+                        ${step.title}
+                    </div>
+                    ${step.content}
+                </div>
+            `;
+            
+            // Update progress
+            const progressPercent = ((stepIndex + 1) / steps.length) * 100;
+            document.getElementById('progressFill').style.width = progressPercent + '%';
+            
+            // Update step counter
+            document.getElementById('stepNumber').textContent = stepIndex + 1;
+            document.getElementById('totalSteps').textContent = steps.length;
+            
+            // Update navigation buttons
+            document.getElementById('prevBtn').style.display = stepIndex === 0 ? 'none' : 'inline-block';
+            document.getElementById('nextBtn').textContent = stepIndex === steps.length - 1 ? 'Finalizar' : 'Próximo →';
+            
+            // Populate data from previous steps
+            populateStepData(stepIndex);
+        }
+
+        function populateStepData(stepIndex) {
+            const step = steps[stepIndex];
+            
+            // Populate warranty data
+            if (step.id === 'consulta-garantia') {
+                document.getElementById('warrantyProduct').textContent = formData.product || 'Notebook';
+                document.getElementById('purchaseDate').textContent = '15/03/2023';
+                document.getElementById('warrantyPeriod').textContent = '24 meses';
+                document.getElementById('warrantyStatus').textContent = 'Verificando...';
+            }
+            
+            // Populate email data
+            if (step.id === 'email-negativa') {
+                document.getElementById('emailTo').textContent = formData.clientEmail || 'cliente@email.com';
+                document.getElementById('emailProduct').textContent = formData.product || 'Notebook';
+                document.getElementById('emailPurchase').textContent = '15/03/2023';
+                document.getElementById('emailWarrantyEnd').textContent = '15/03/2025';
+            }
+            
+            // Populate schedule email
+            if (step.id === 'email-horarios') {
+                document.getElementById('scheduleEmailTo').textContent = formData.clientEmail || 'cliente@email.com';
+            }
+        }
+
+        function nextStep() {
+            // Validate current step
+            if (!validateCurrentStep()) {
+                return;
+            }
+            
+            // Save form data
+            saveCurrentStepData();
+            
+            // Handle decision logic
+            if (currentStepIndex === 5) { // Analysis step
+                const decision = document.getElementById('warrantyDecision').value;
+                if (decision === 'expired') {
+                    currentStepIndex = 6; // Go to negative email
+                } else if (decision === 'analysis') {
+                    currentStepIndex = 7; // Go to manual analysis
+                } else if (decision === 'within') {
+                    currentStepIndex = 8; // Go to scheduling
+                }
+            } else if (currentStepIndex === 6) { // Negative email
+                currentStepIndex = 14; // Skip to end (continuous improvement)
+            } else if (currentStepIndex === 7) { // Manual analysis
+                const analystDecision = document.getElementById('analystDecision').value;
+                if (analystDecision === 'denied') {
+                    currentStepIndex = 6; // Go to negative email
+                } else if (analystDecision === 'approved') {
+                    currentStepIndex = 8; // Go to scheduling
+                } else {
+                    currentStepIndex++;
+                }
+            } else if (currentStepIndex === 11) { // Technical visit
+                const diagnosis = document.getElementById('technicalDiagnosis').value;
+                if (diagnosis === 'immediate') {
+                    currentStepIndex = 12; // Go to final repair
+                } else if (diagnosis === 'parts') {
+                    // Simulate parts ordering and return to technical visit
+                    alert('Peças solicitadas! Nova visita será agendada quando as peças chegarem.');
+                    currentStepIndex = 11; // Stay in technical visit
+                } else {
+                    currentStepIndex++;
+                }
+            } else {
+                currentStepIndex++;
+            }
+            
+            if (currentStepIndex >= steps.length) {
+                currentStepIndex = steps.length - 1;
+            }
+            
+            renderStep(currentStepIndex);
+        }
+
+        function previousStep() {
+            if (currentStepIndex > 0) {
+                currentStepIndex--;
+                renderStep(currentStepIndex);
+            }
+        }
+
+        function validateCurrentStep() {
+            const step = steps[currentStepIndex];
+            
+            if (step.id === 'cliente-acesso') {
+                const accessMethod = document.getElementById('accessMethod').value;
+                if (!accessMethod) {
+                    alert('Por favor, selecione como deseja acessar o sistema.');
+                    return false;
+                }
+            }
+            
+            if (step.id === 'formulario') {
+                const name = document.getElementById('clientName').value;
+                const email = document.getElementById('clientEmail').value;
+                const product = document.getElementById('product').value;
+                const serial = document.getElementById('serialNumber').value;
+                const problem = document.getElementById('problemDescription').value;
+                
+                if (!name || !email || !product || !serial || !problem) {
+                    alert('Por favor, preencha todos os campos obrigatórios.');
+                    return false;
+                }
+            }
+            
+            if (step.id === 'analise-garantia') {
+                const decision = document.getElementById('warrantyDecision').value;
+                if (!decision) {
+                    alert('Por favor, selecione o resultado da análise de garantia.');
+                    return false;
+                }
+            }
+            
+            return true;
+        }
+
+        function saveCurrentStepData() {
+            const step = steps[currentStepIndex];
+            
+            if (step.id === 'cliente-acesso') {
+                formData.accessMethod = document.getElementById('accessMethod').value;
+            }
+            
+            if (step.id === 'formulario') {
+                formData.clientName = document.getElementById('clientName').value;
+                formData.clientEmail = document.getElementById('clientEmail').value;
+                formData.product = document.getElementById('product').value;
+                formData.serialNumber = document.getElementById('serialNumber').value;
+                formData.problemDescription = document.getElementById('problemDescription').value;
+            }
+            
+            if (step.id === 'analise-garantia') {
+                formData.warrantyDecision = document.getElementById('warrantyDecision').value;
+            }
+            
+            if (step.id === 'analise-manual') {
+                formData.analystDecision = document.getElementById('analystDecision').value;
+            }
+            
+            if (step.id === 'visita-tecnica') {
+                formData.technicalDiagnosis = document.getElementById('technicalDiagnosis').value;
+            }
+            
+            if (step.id === 'reparo-final') {
+                formData.solution = document.getElementById('solution').value;
+            }
+            
+            if (step.id === 'satisfacao') {
+                formData.rating = rating;
+                formData.feedback = document.getElementById('feedback').value;
+                formData.recommendation = document.getElementById('recommendation').value;
+            }
+        }
+
+        function updateWarrantyStatus() {
+            const decision = document.getElementById('warrantyDecision').value;
+            const resultDiv = document.getElementById('warrantyResult');
+            
+            if (decision === 'within') {
+                resultDiv.innerHTML = '<div class="status-badge status-success">✅ Produto dentro da garantia</div>';
+            } else if (decision === 'expired') {
+                resultDiv.innerHTML = '<div class="status-badge status-danger">❌ Garantia expirada</div>';
+            } else if (decision === 'analysis') {
+                resultDiv.innerHTML = '<div class="status-badge status-warning">⚠️ Necessita análise manual</div>';
+            }
+        }
+
+        function selectSchedule(option) {
+            // Remove previous selection
+            document.querySelectorAll('.schedule-option').forEach(el => {
+                el.classList.remove('selected');
+            });
+            
+            // Add selection to clicked option
+            event.target.classList.add('selected');
+            selectedSchedule = option;
+            
+            // Update confirmation data
+            const schedules = [
+                { date: 'Amanhã', time: '09:00 - 12:00', tech: 'Carlos' },
+                { date: 'Amanhã', time: '14:00 - 17:00', tech: 'Ana' },
+                { date: 'Depois de Amanhã', time: '08:00 - 11:00', tech: 'Roberto' }
+            ];
+            
+            formData.selectedSchedule = schedules[option - 1];
+        }
+
+        function updateDiagnosis() {
+            const diagnosis = document.getElementById('technicalDiagnosis').value;
+            const resultDiv = document.getElementById('diagnosisResult');
+            
+            if (diagnosis === 'immediate') {
+                resultDiv.innerHTML = '<div class="status-badge status-success">✅ Reparo pode ser feito imediatamente</div>';
+            } else if (diagnosis === 'parts') {
+                resultDiv.innerHTML = '<div class="status-badge status-warning">⚠️ Necessita peças - Nova visita será agendada</div>';
+            }
+        }
+
+        function setRating(stars) {
+            rating = stars;
+            const starElements = document.querySelectorAll('.star');
+            const ratingText = document.getElementById('ratingText');
+            
+            starElements.forEach((star, index) => {
+                if (index < stars) {
+                    star.classList.add('active');
+                } else {
+                    star.classList.remove('active');
+                }
+            });
+            
+            const ratingTexts = [
+                '', 'Muito Insatisfeito', 'Insatisfeito', 'Neutro', 'Satisfeito', 'Muito Satisfeito'
+            ];
+            ratingText.textContent = ratingTexts[stars];
+        }
+
+        function restartProcess() {
+            currentStepIndex = 0;
+            formData = {};
+            selectedSchedule = null;
+            rating = 0;
+            renderStep(0);
+        }
+
+        // Initialize the system
+        renderStep(0);
+
+        // Add some dynamic updates for demonstration
+        setTimeout(() => {
+            if (steps[currentStepIndex].id === 'consulta-garantia') {
+                document.getElementById('warrantyStatus').textContent = 'Dentro da garantia';
+            }
+        }, 2000);
+
+        // Populate confirmation data when reaching that step
+        function updateConfirmationData() {
+            if (formData.selectedSchedule) {
+                document.getElementById('confirmedDate').textContent = formData.selectedSchedule.date;
+                document.getElementById('confirmedTime').textContent = formData.selectedSchedule.time;
+                document.getElementById('confirmedTechnician').textContent = formData.selectedSchedule.tech;
+            }
+        }
+
+        // Override renderStep to include confirmation data update
+        const originalRenderStep = renderStep;
+        renderStep = function(stepIndex) {
+            originalRenderStep(stepIndex);
+            if (steps[stepIndex].id === 'confirmacao') {
+                setTimeout(updateConfirmationData, 100);
+            }
+        }
