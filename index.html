@@ -308,11 +308,11 @@
         <div id="currentStep"></div>
 
         <div class="navigation">
-            <button class="btn btn-secondary" id="prevBtn" onclick="previousStep()">← Anterior</button>
+            <button class="btn btn-secondary" id="prevBtn">← Anterior</button>
             <div>
                 <span>Etapa <span id="stepNumber">1</span> de <span id="totalSteps">15</span></span>
             </div>
-            <button class="btn" id="nextBtn" onclick="nextStep()">Próximo →</button>
+            <button class="btn" id="nextBtn">Próximo →</button>
         </div>
     </div>
 
@@ -440,7 +440,7 @@
                         <h3>Resultado da Análise:</h3>
                         <div class="form-group">
                             <label>Status da Garantia:</label>
-                            <select id="warrantyDecision" onchange="updateWarrantyStatus()">
+                            <select id="warrantyDecision">
                                 <option value="">Selecione o resultado</option>
                                 <option value="within">Dentro da Garantia</option>
                                 <option value="expired">Garantia Expirada</option>
@@ -537,17 +537,17 @@
                     </div>
                     
                     <div class="schedule-options">
-                        <div class="schedule-option" onclick="selectSchedule(1)">
+                        <div class="schedule-option" data-schedule="1">
                             <strong>Amanhã</strong><br>
                             09:00 - 12:00<br>
                             <small>Técnico: Carlos</small>
                         </div>
-                        <div class="schedule-option" onclick="selectSchedule(2)">
+                        <div class="schedule-option" data-schedule="2">
                             <strong>Amanhã</strong><br>
                             14:00 - 17:00<br>
                             <small>Técnico: Ana</small>
                         </div>
-                        <div class="schedule-option" onclick="selectSchedule(3)">
+                        <div class="schedule-option" data-schedule="3">
                             <strong>Depois de Amanhã</strong><br>
                             08:00 - 11:00<br>
                             <small>Técnico: Roberto</small>
@@ -590,7 +590,7 @@
                     </div>
                     <div class="form-group">
                         <label>Diagnóstico:</label>
-                        <select id="technicalDiagnosis" onchange="updateDiagnosis()">
+                        <select id="technicalDiagnosis">
                             <option value="">Aguardando diagnóstico...</option>
                             <option value="immediate">Reparo imediato possível</option>
                             <option value="parts">Necessita peças de reposição</option>
@@ -631,11 +631,11 @@
                         <div style="text-align: center;">
                             <h3>Como você avalia nosso atendimento?</h3>
                             <div class="rating-stars">
-                                <span class="star" onclick="setRating(1)">⭐</span>
-                                <span class="star" onclick="setRating(2)">⭐</span>
-                                <span class="star" onclick="setRating(3)">⭐</span>
-                                <span class="star" onclick="setRating(4)">⭐</span>
-                                <span class="star" onclick="setRating(5)">⭐</span>
+                                <span class="star" data-rating="1">⭐</span>
+                                <span class="star" data-rating="2">⭐</span>
+                                <span class="star" data-rating="3">⭐</span>
+                                <span class="star" data-rating="4">⭐</span>
+                                <span class="star" data-rating="5">⭐</span>
                             </div>
                             <p id="ratingText">Clique nas estrelas para avaliar</p>
                         </div>
@@ -687,11 +687,15 @@
                     </div>
                     <div class="status-badge status-success">🎉 Processo concluído com sucesso!</div>
                     <div style="text-align: center; margin-top: 20px;">
-                        <button class="btn btn-success" onclick="restartProcess()">🔄 Simular Novo Atendimento</button>
+                        <button class="btn btn-success" id="restartBtn">🔄 Simular Novo Atendimento</button>
                     </div>
                 `
             }
         ];
+
+        // Event listeners
+        document.getElementById('prevBtn').addEventListener('click', previousStep);
+        document.getElementById('nextBtn').addEventListener('click', nextStep);
 
         function renderStep(stepIndex) {
             const step = steps[stepIndex];
@@ -719,262 +723,12 @@
             document.getElementById('prevBtn').style.display = stepIndex === 0 ? 'none' : 'inline-block';
             document.getElementById('nextBtn').textContent = stepIndex === steps.length - 1 ? 'Finalizar' : 'Próximo →';
             
+            // Add event listeners for this step
+            addStepEventListeners(stepIndex);
+            
             // Populate data from previous steps
             populateStepData(stepIndex);
         }
 
-        function populateStepData(stepIndex) {
+        function addStepEventListeners(stepIndex) {
             const step = steps[stepIndex];
-            
-            // Populate warranty data
-            if (step.id === 'consulta-garantia') {
-                document.getElementById('warrantyProduct').textContent = formData.product || 'Notebook';
-                document.getElementById('purchaseDate').textContent = '15/03/2023';
-                document.getElementById('warrantyPeriod').textContent = '24 meses';
-                document.getElementById('warrantyStatus').textContent = 'Verificando...';
-            }
-            
-            // Populate email data
-            if (step.id === 'email-negativa') {
-                document.getElementById('emailTo').textContent = formData.clientEmail || 'cliente@email.com';
-                document.getElementById('emailProduct').textContent = formData.product || 'Notebook';
-                document.getElementById('emailPurchase').textContent = '15/03/2023';
-                document.getElementById('emailWarrantyEnd').textContent = '15/03/2025';
-            }
-            
-            // Populate schedule email
-            if (step.id === 'email-horarios') {
-                document.getElementById('scheduleEmailTo').textContent = formData.clientEmail || 'cliente@email.com';
-            }
-        }
-
-        function nextStep() {
-            // Validate current step
-            if (!validateCurrentStep()) {
-                return;
-            }
-            
-            // Save form data
-            saveCurrentStepData();
-            
-            // Handle decision logic
-            if (currentStepIndex === 5) { // Analysis step
-                const decision = document.getElementById('warrantyDecision').value;
-                if (decision === 'expired') {
-                    currentStepIndex = 6; // Go to negative email
-                } else if (decision === 'analysis') {
-                    currentStepIndex = 7; // Go to manual analysis
-                } else if (decision === 'within') {
-                    currentStepIndex = 8; // Go to scheduling
-                }
-            } else if (currentStepIndex === 6) { // Negative email
-                currentStepIndex = 14; // Skip to end (continuous improvement)
-            } else if (currentStepIndex === 7) { // Manual analysis
-                const analystDecision = document.getElementById('analystDecision').value;
-                if (analystDecision === 'denied') {
-                    currentStepIndex = 6; // Go to negative email
-                } else if (analystDecision === 'approved') {
-                    currentStepIndex = 8; // Go to scheduling
-                } else {
-                    currentStepIndex++;
-                }
-            } else if (currentStepIndex === 11) { // Technical visit
-                const diagnosis = document.getElementById('technicalDiagnosis').value;
-                if (diagnosis === 'immediate') {
-                    currentStepIndex = 12; // Go to final repair
-                } else if (diagnosis === 'parts') {
-                    // Simulate parts ordering and return to technical visit
-                    alert('Peças solicitadas! Nova visita será agendada quando as peças chegarem.');
-                    currentStepIndex = 11; // Stay in technical visit
-                } else {
-                    currentStepIndex++;
-                }
-            } else {
-                currentStepIndex++;
-            }
-            
-            if (currentStepIndex >= steps.length) {
-                currentStepIndex = steps.length - 1;
-            }
-            
-            renderStep(currentStepIndex);
-        }
-
-        function previousStep() {
-            if (currentStepIndex > 0) {
-                currentStepIndex--;
-                renderStep(currentStepIndex);
-            }
-        }
-
-        function validateCurrentStep() {
-            const step = steps[currentStepIndex];
-            
-            if (step.id === 'cliente-acesso') {
-                const accessMethod = document.getElementById('accessMethod').value;
-                if (!accessMethod) {
-                    alert('Por favor, selecione como deseja acessar o sistema.');
-                    return false;
-                }
-            }
-            
-            if (step.id === 'formulario') {
-                const name = document.getElementById('clientName').value;
-                const email = document.getElementById('clientEmail').value;
-                const product = document.getElementById('product').value;
-                const serial = document.getElementById('serialNumber').value;
-                const problem = document.getElementById('problemDescription').value;
-                
-                if (!name || !email || !product || !serial || !problem) {
-                    alert('Por favor, preencha todos os campos obrigatórios.');
-                    return false;
-                }
-            }
-            
-            if (step.id === 'analise-garantia') {
-                const decision = document.getElementById('warrantyDecision').value;
-                if (!decision) {
-                    alert('Por favor, selecione o resultado da análise de garantia.');
-                    return false;
-                }
-            }
-            
-            return true;
-        }
-
-        function saveCurrentStepData() {
-            const step = steps[currentStepIndex];
-            
-            if (step.id === 'cliente-acesso') {
-                formData.accessMethod = document.getElementById('accessMethod').value;
-            }
-            
-            if (step.id === 'formulario') {
-                formData.clientName = document.getElementById('clientName').value;
-                formData.clientEmail = document.getElementById('clientEmail').value;
-                formData.product = document.getElementById('product').value;
-                formData.serialNumber = document.getElementById('serialNumber').value;
-                formData.problemDescription = document.getElementById('problemDescription').value;
-            }
-            
-            if (step.id === 'analise-garantia') {
-                formData.warrantyDecision = document.getElementById('warrantyDecision').value;
-            }
-            
-            if (step.id === 'analise-manual') {
-                formData.analystDecision = document.getElementById('analystDecision').value;
-            }
-            
-            if (step.id === 'visita-tecnica') {
-                formData.technicalDiagnosis = document.getElementById('technicalDiagnosis').value;
-            }
-            
-            if (step.id === 'reparo-final') {
-                formData.solution = document.getElementById('solution').value;
-            }
-            
-            if (step.id === 'satisfacao') {
-                formData.rating = rating;
-                formData.feedback = document.getElementById('feedback').value;
-                formData.recommendation = document.getElementById('recommendation').value;
-            }
-        }
-
-        function updateWarrantyStatus() {
-            const decision = document.getElementById('warrantyDecision').value;
-            const resultDiv = document.getElementById('warrantyResult');
-            
-            if (decision === 'within') {
-                resultDiv.innerHTML = '<div class="status-badge status-success">✅ Produto dentro da garantia</div>';
-            } else if (decision === 'expired') {
-                resultDiv.innerHTML = '<div class="status-badge status-danger">❌ Garantia expirada</div>';
-            } else if (decision === 'analysis') {
-                resultDiv.innerHTML = '<div class="status-badge status-warning">⚠️ Necessita análise manual</div>';
-            }
-        }
-
-        function selectSchedule(option) {
-            // Remove previous selection
-            document.querySelectorAll('.schedule-option').forEach(el => {
-                el.classList.remove('selected');
-            });
-            
-            // Add selection to clicked option
-            event.target.classList.add('selected');
-            selectedSchedule = option;
-            
-            // Update confirmation data
-            const schedules = [
-                { date: 'Amanhã', time: '09:00 - 12:00', tech: 'Carlos' },
-                { date: 'Amanhã', time: '14:00 - 17:00', tech: 'Ana' },
-                { date: 'Depois de Amanhã', time: '08:00 - 11:00', tech: 'Roberto' }
-            ];
-            
-            formData.selectedSchedule = schedules[option - 1];
-        }
-
-        function updateDiagnosis() {
-            const diagnosis = document.getElementById('technicalDiagnosis').value;
-            const resultDiv = document.getElementById('diagnosisResult');
-            
-            if (diagnosis === 'immediate') {
-                resultDiv.innerHTML = '<div class="status-badge status-success">✅ Reparo pode ser feito imediatamente</div>';
-            } else if (diagnosis === 'parts') {
-                resultDiv.innerHTML = '<div class="status-badge status-warning">⚠️ Necessita peças - Nova visita será agendada</div>';
-            }
-        }
-
-        function setRating(stars) {
-            rating = stars;
-            const starElements = document.querySelectorAll('.star');
-            const ratingText = document.getElementById('ratingText');
-            
-            starElements.forEach((star, index) => {
-                if (index < stars) {
-                    star.classList.add('active');
-                } else {
-                    star.classList.remove('active');
-                }
-            });
-            
-            const ratingTexts = [
-                '', 'Muito Insatisfeito', 'Insatisfeito', 'Neutro', 'Satisfeito', 'Muito Satisfeito'
-            ];
-            ratingText.textContent = ratingTexts[stars];
-        }
-
-        function restartProcess() {
-            currentStepIndex = 0;
-            formData = {};
-            selectedSchedule = null;
-            rating = 0;
-            renderStep(0);
-        }
-
-        // Initialize the system
-        renderStep(0);
-
-        // Add some dynamic updates for demonstration
-        setTimeout(() => {
-            if (steps[currentStepIndex].id === 'consulta-garantia') {
-                document.getElementById('warrantyStatus').textContent = 'Dentro da garantia';
-            }
-        }, 2000);
-
-        // Populate confirmation data when reaching that step
-        function updateConfirmationData() {
-            if (formData.selectedSchedule) {
-                document.getElementById('confirmedDate').textContent = formData.selectedSchedule.date;
-                document.getElementById('confirmedTime').textContent = formData.selectedSchedule.time;
-                document.getElementById('confirmedTechnician').textContent = formData.selectedSchedule.tech;
-            }
-        }
-
-        // Override renderStep to include confirmation data update
-        const originalRenderStep = renderStep;
-        renderStep = function(stepIndex) {
-            originalRenderStep(stepIndex);
-            if (steps[stepIndex].id === 'confirmacao') {
-                setTimeout(updateConfirmationData, 100);
-            }
-        }
